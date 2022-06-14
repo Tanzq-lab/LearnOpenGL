@@ -77,6 +77,12 @@ https://learnopengl-cn.github.io/01%20Getting%20started/02%20Creating%20a%20wind
 
 
 
+## glfw 主版本号 和 次版本号是什么？
+
+
+
+## glfw 有哪几种模式，有什么区别？
+
 
 
 
