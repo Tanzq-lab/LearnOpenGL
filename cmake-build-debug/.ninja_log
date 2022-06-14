@@ -1,0 +1,11 @@
+# ninja log v5
+1	369	1655121816434960900	build.ninja	764de3f368773f8f
+0	901	1655121817410572300	CMakeFiles/LearnOpenGL.dir/main.cpp.o	dabab6aa8af71290
+17	2069	1655121818579334500	CMakeFiles/LearnOpenGL.dir/src/glad.c.o	78a773cc7fca1ad3
+2070	2439	1655121818938549600	LearnOpenGL.exe	ceb59ad6be1d8cde
+6	610	1655124059666610800	CMakeFiles/LearnOpenGL.dir/main.cpp.o	dabab6aa8af71290
+611	811	1655124059858755800	LearnOpenGL.exe	ceb59ad6be1d8cde
+8	583	1655124745451853200	CMakeFiles/LearnOpenGL.dir/main.cpp.o	dabab6aa8af71290
+583	784	1655124745651717100	LearnOpenGL.exe	ceb59ad6be1d8cde
+8	693	1655124873563650800	CMakeFiles/LearnOpenGL.dir/main.cpp.o	dabab6aa8af71290
+694	894	1655124873764954200	LearnOpenGL.exe	ceb59ad6be1d8cde

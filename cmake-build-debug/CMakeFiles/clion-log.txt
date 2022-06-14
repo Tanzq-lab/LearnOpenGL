@@ -1,0 +1,4 @@
+C:\Users\Vincent\AppData\Local\JetBrains\CLion2021.3\cygwin_cmake\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=/cygdrive/c/Program Files/JetBrains/CLion 2021.3.3/bin/ninja/cygwin/ninja.exe" -G Ninja /cygdrive/e/Notes/LearnOpenGL
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /cygdrive/e/Notes/LearnOpenGL/cmake-build-debug
