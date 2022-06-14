@@ -1,8 +1,8 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "Shader.h"
 
 #include <iostream>
+#include <cmath>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -11,6 +11,23 @@ void processInput(GLFWwindow *window);
 // 参数设置
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+// 将顶点着色器的源码硬编码在文件中。
+const char *vertexShaderSource = "#version 330 core\n"
+                                 "layout (location = 0) in vec3 aPos;\n"
+                                 "void main()\n"
+                                 "{\n"
+                                 "   gl_Position = vec4(aPos, 1.0);\n"
+                                 "}\0";
+
+// 将片段着色器的源码硬编码在文件中。
+const char *fragmentShaderSource = "#version 330 core\n"
+                                   "out vec4 FragColor;\n"
+                                   "uniform vec4 ourColor;\n"
+                                   "void main()\n"
+                                   "{\n"
+                                   "   FragColor = ourColor;\n"
+                                   "}\n\0";
 
 int main() {
     /*
@@ -54,15 +71,57 @@ int main() {
 
     // 创建并编译着色器
     // ------------------------------------
-    Shader ourShader("shader.vert", "shader.frag");
+    // 创建顶点着色器
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    // 附加到着色器对象上，并进行编译。
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    glCompileShader(vertexShader);
+
+
+    // 检测是否有编译错误
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+
+    // fragment shader
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glCompileShader(fragmentShader);
+    // 检测编译是否出错
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+
+    // 链接着色器
+    unsigned int shaderProgram = glCreateProgram(); // 创建程序对象
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    // 检查链接是否成功
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+    // 已经链接完成了，不需要这写着色器对象了，对这些对象进行释放。
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
     // 设置顶点数据(和缓冲区)并配置顶点属性
     // ------------------------------------------------------------------
     float vertices[] = {
-            // 位置              // 颜色
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   // 右下
-            -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // 左下
-            0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f    // 顶部
+            -0.5f, -0.5f, 0.0f, // left
+            0.5f, -0.5f, 0.0f, // right
+            0.0f, 0.5f, 0.0f  // top
     };
 
     unsigned int VBO, VAO;
@@ -83,15 +142,21 @@ int main() {
      * */
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // 位置属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) nullptr);
-    glEnableVertexAttribArray(0); // 对应 aPos 属性
-    // 颜色属性
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
-    glEnableVertexAttribArray(1);// 对应 aColor 属性
+    /*
+     * 参数一：指定要配置的顶点属性
+     * 对应于 ("layout(location = 0)"， 它将顶点属性的位置值设置为了0)，我们需要的就是这个顶点，所以这里传递0进去。
+     * 参数二：顶点属性的大小， vec3 -> 3。
+     * 参数三：数据类型。
+     * 参数四：是否希望被初始化。
+     * 参数五：步长，代表连续的顶点属性组之间的间隔。
+     * 参数六：表示起止位置的偏移量。
+     * */
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) nullptr);
+    glEnableVertexAttribArray(0);
 
-    // 激活渲染程序对象
-    ourShader.use();
+    // 绑定顶点数组
+    glBindVertexArray(VAO);
+
 
     /*
      * 渲染循环
@@ -107,9 +172,18 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // 激活渲染程序对象
+        glUseProgram(shaderProgram);
+
+        // 持续的更新uniform值，让程序有一个渐变的效果。
+        double timeValue = glfwGetTime();
+        auto greenValue = static_cast<float>(sin(timeValue) / 2.0 + 0.5);
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
         // 绘制一个三角形，起始索引为0，绘制3个顶点。
-        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glBindVertexArray(0); // no need to unbind it every time
 
         //------------------------------------
 
@@ -124,6 +198,7 @@ int main() {
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shaderProgram);
 
     // 释放/删除之前的分配的所有资源
     glfwTerminate();

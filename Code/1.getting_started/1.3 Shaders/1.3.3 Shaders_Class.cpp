@@ -107,6 +107,8 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+
+
         // 绘制一个三角形，起始索引为0，绘制3个顶点。
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
