@@ -1,9 +1,11 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "Shader.h"
+#include "stb/stb_image.h"
 
 #include <iostream>
-#include <cmath>
+
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -55,20 +57,27 @@ int main() {
 
     // 创建并编译着色器
     // ------------------------------------
-    Shader ourShader("shader.vert", "shader.frag");
+    Shader ourShader("./assets/Textures/texture.vert", "./assets/Textures/texture.frag");
 
     // 设置顶点数据(和缓冲区)并配置顶点属性
     // ------------------------------------------------------------------
     float vertices[] = {
-            // 位置              // 颜色
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   // 右下
-            -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // 左下
-            0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f    // 顶部
+            //     ---- 位置 ----      ---- 颜色 ----       - 纹理坐标 -
+            0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
+            0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // 右下
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // 左下
+            -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // 左上
     };
 
-    unsigned int VBO, VAO;
+    unsigned int indices[] = {
+            0, 1, 3, // 第一个三角形
+            1, 2, 3  // 第二个三角形
+    };
+
+    unsigned int VBO, VAO, EBO;
     glGenBuffers(1, &VBO);  // 生成顶点缓冲对象
     glGenVertexArrays(1, &VAO); // 生成顶点数组对象
+    glGenBuffers(1, &EBO);
     // 首先绑定顶点数组对象，然后绑定和设置顶点缓冲区，然后配置顶点属性。
     glBindVertexArray(VAO);
 
@@ -84,15 +93,91 @@ int main() {
      * */
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     // 位置属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) nullptr);
     glEnableVertexAttribArray(0); // 对应 aPos 属性
     // 颜色属性
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);// 对应 aColor 属性
+    // 纹理属性
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // 创建并绑定纹理 1
+    unsigned int texture1, texture2;
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    // 为当前绑定的纹理对象设置环绕、过滤方式
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // 翻转Y轴，让图片正着放置。
+    stbi_set_flip_vertically_on_load(true);
+
+    // 加载图片，并保存图像的宽度、高度、颜色通道的个数
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("./assets/Images/container.jpg", &width, &height, &nrChannels, 0);
+    if (data) {
+        // 将图片加载到纹理上。
+        /*
+         * 参数一：指定纹理目标
+         * 参数二：指定多级渐远纹理级别
+         * 参数三：纹理存储的格式
+         * 参数四：最终的纹理宽度
+         * 参数五：最终的纹理高度
+         * 参数六：设置成0就对了
+         * 参数七：源图的格式
+         * 参数八：源图的数据类型
+         * 参数九：图像数据
+         *
+         * */
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    // 已经生成了纹理，这个数据就可以直释放掉了。
+    stbi_image_free(data);
+
+
+    // 创建并绑定纹理 2
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    // 为当前绑定的纹理对象设置环绕、过滤方式
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // 加载图片，并保存图像的宽度、高度、颜色通道的个数
+    data = stbi_load(R"(./assets/Images/awesomeface.png)", &width, &height, &nrChannels, 0);
+    if (data) {
+        // 将图片加载到纹理上。
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    // 已经生成了纹理，这个数据就可以直释放掉了。
+    stbi_image_free(data);
+
+    // 激活纹理
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
 
     // 激活渲染程序对象
-    ourShader.use();
+    ourShader.use(); // 不要忘记在设置uniform变量之前激活着色器程序！
+    glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); // 手动设置
+    ourShader.setInt("texture2", 1); // 或者使用着色器类设置
 
     /*
      * 渲染循环
@@ -108,9 +193,9 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // 绘制一个三角形，起始索引为0，绘制3个顶点。
+
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         //------------------------------------
 
