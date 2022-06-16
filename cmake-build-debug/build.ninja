@@ -75,21 +75,21 @@ build cmake_object_order_depends_target_LearnOpenGL: phony || CMakeFiles/LearnOp
 build CMakeFiles/LearnOpenGL.dir/main.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/main.cpp || cmake_object_order_depends_target_LearnOpenGL
   DEP_FILE = CMakeFiles/LearnOpenGL.dir/main.cpp.o.d
   FLAGS = -g -std=gnu++11
-  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
   OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
   OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir
 
 build CMakeFiles/LearnOpenGL.dir/src/glad.c.o: C_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/src/glad.c || cmake_object_order_depends_target_LearnOpenGL
   DEP_FILE = CMakeFiles/LearnOpenGL.dir/src/glad.c.o.d
   FLAGS = -g
-  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
   OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
   OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/src
 
 build CMakeFiles/LearnOpenGL.dir/Shader.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/Shader.cpp || cmake_object_order_depends_target_LearnOpenGL
   DEP_FILE = CMakeFiles/LearnOpenGL.dir/Shader.cpp.o.d
   FLAGS = -g -std=gnu++11
-  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
   OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
   OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir
 
