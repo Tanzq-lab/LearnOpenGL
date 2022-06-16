@@ -6,7 +6,6 @@
 
 #include <iostream>
 
-
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void processInput(GLFWwindow *window);
@@ -14,6 +13,8 @@ void processInput(GLFWwindow *window);
 // 参数设置
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+float alpha = 0.2;
 
 int main() {
     /*
@@ -157,10 +158,10 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // 加载图片，并保存图像的宽度、高度、颜色通道的个数
-    data = stbi_load(R"(./assets/Images/awesomeface.png)", &width, &height, &nrChannels, 0);
+    data = stbi_load("./assets/Images/awesomeface.png", &width, &height, &nrChannels, 0);
     if (data) {
         // 将图片加载到纹理上。
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
         std::cout << "Failed to load texture" << std::endl;
@@ -193,6 +194,7 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        ourShader.setFloat("alpha", alpha);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
@@ -228,4 +230,12 @@ void processInput(GLFWwindow *window) {
     // 如果 esc 键按下了，就设置当前窗口允许被关闭。紧接着就会停止渲染循环。
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
+        alpha += 0.01f;
+        if (alpha > 1.f) alpha = 1.f;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
+        alpha -= 0.01f;
+        if (alpha < 0.f) alpha = 0.f;
+    }
 }
