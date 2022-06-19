@@ -203,15 +203,28 @@ int main() {
 
         ourShader.setFloat("alpha", alpha);
 
-        glm::mat4 trans;
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
+        // 确保矩阵为单位矩阵
+        glm::mat4 transform = glm::mat4(1.0f);
+        // 第一个容器
+        // ---------------
+        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        // 设置 transform 值
         unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-        glUniformMatrix4fv((GLint)transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        glUniformMatrix4fv((GLint)transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
+        // 绘制第一个图形。
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-        glBindVertexArray(VAO);
+        // 第二个变换
+        // ---------------------
+        transform = glm::mat4(1.0f); // 重置矩阵
+        transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
+        auto scaleAmount = static_cast<float>(sin(glfwGetTime()));
+        transform = glm::scale(transform, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
+        glUniformMatrix4fv((GLint)transformLoc, 1, GL_FALSE, &transform[0][0]); // 这次将矩阵值数组的第一个元素作为内存指针值
+
+        // 现在统一矩阵被替换成新的变换，再画一遍。
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         //------------------------------------
