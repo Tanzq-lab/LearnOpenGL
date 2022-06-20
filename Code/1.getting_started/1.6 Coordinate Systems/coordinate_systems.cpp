@@ -4,7 +4,6 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "LearnOpenGL/Shader.h"
-#include "LearnOpenGL/camera.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -14,28 +13,12 @@
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 void processInput(GLFWwindow *window);
 
 // 参数设置
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-
-// 摄像机
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
-
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
-
-// 时间
-float deltaTime = 0.0f;	// 当前帧和上一帧相差的时间
-float lastFrame = 0.0f;
-
 
 int main() {
     /*
@@ -62,15 +45,6 @@ int main() {
     // 将该窗口的上下文设置为当前线程的主上下文。
     glfwMakeContextCurrent(window);
 
-    // 告诉glfw 每当窗口调整大小的时候调用这个函数。
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    // 绑定鼠标回调函数
-    glfwSetCursorPosCallback(window, mouse_callback);
-
-    glfwSetScrollCallback(window, scroll_callback);
-
-    // 隐藏光标，并进行捕捉。
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     /*
      *   初始化 glad
@@ -82,6 +56,9 @@ int main() {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+    // 告诉glfw 每当窗口调整大小的时候调用这个函数。
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // 创建并编译着色器
     // ------------------------------------
@@ -257,11 +234,6 @@ int main() {
      * */
     // while 循环判断 glfw 是否被要求退出。
     while (!glfwWindowShouldClose(window)) {
-        // 每帧的时间计算逻辑
-        auto currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
         // 在每一帧上面调用输入检测函数。
         processInput(window);
 
@@ -270,12 +242,19 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        ourShader.setMat4("projection", projection);
+        // 创建变换
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
 
-        // 摄像机位置  目标位置   世界空间中的向上向量的向量
-        glm::mat4 view = camera.GetViewMatrix();
-        ourShader.setMat4("view", view);
+        // 注意，我们将矩阵向我们要进行移动场景的反方向移动。
+        view = glm::translate(view, glm::vec3(0.0f, 0.f, -3.0f));
+        // 设置投影矩阵
+        projection = glm::perspective(glm::radians(45.0f), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
+
+        // 使用三种不同的方式给 uniform 变量赋值
+        unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
+        glUniformMatrix4fv((GLint) viewLoc, 1, GL_FALSE, &view[0][0]);
+        ourShader.setMat4("projection", projection);
 
         // 绘制方块图形
         for (unsigned int i = 0; i < 10; i++)
@@ -284,7 +263,9 @@ int main() {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * (float)i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            float times = 1.f;
+            if (i % 3 == 0) times = (float)glfwGetTime();
+            model = glm::rotate(model, times * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setMat4("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -321,43 +302,4 @@ void processInput(GLFWwindow *window) {
     // 如果 esc 键按下了，就设置当前窗口允许被关闭。紧接着就会停止渲染循环。
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-}
-
-// 当鼠标移动的时候就会调用到这个函数。
-// -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
-    auto xpos = static_cast<float>(xposIn);
-    auto ypos = static_cast<float>(yposIn);
-
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-// 当鼠标滚轮滑动的时候就会调用这个函数
-// ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
