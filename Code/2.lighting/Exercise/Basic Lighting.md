@@ -14,6 +14,8 @@
 
 
 
+![LightTest](Images/LightTest.gif)
+
 
 
 - 在观察空间（而不是世界空间）中计算冯氏光照。

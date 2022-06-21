@@ -233,6 +233,15 @@ LearnOpenGL_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 LearnOpenGL_SOURCE_DIR:STATIC=/cygdrive/e/Notes/LearnOpenGL
 
+//Value Computed by CMake
+imgui_BINARY_DIR:STATIC=/cygdrive/e/Notes/LearnOpenGL/cmake-build-debug/include/imgui
+
+//Value Computed by CMake
+imgui_IS_TOP_LEVEL:STATIC=OFF
+
+//Value Computed by CMake
+imgui_SOURCE_DIR:STATIC=/cygdrive/e/Notes/LearnOpenGL/include/imgui
+
 
 ########################
 # INTERNAL cache entries

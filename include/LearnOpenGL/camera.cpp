@@ -4,14 +4,19 @@
 
 #include "camera.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
                                                                            MovementSpeed(SPEED),
                                                                            MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
-    Position = position;
+//    Position = position;
+    Position = {-0.874209, 0.744403, -1.23812};
+
     WorldUp = up;
-    Yaw = yaw;
-    Pitch = pitch;
+//    Yaw = yaw;
+//    Pitch = pitch;
+    Yaw = 53.5001;
+    Pitch = -3.5;
     updateCameraVectors();
 }
 
@@ -55,6 +60,8 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
         if (Pitch < -89.0f)
             Pitch = -89.0f;
     }
+
+    std::cout << "Yaw : " << Yaw << " Pitch : " << Pitch << std::endl;
 
     // 使用更新的欧拉角更新 向右 向上 向前
     updateCameraVectors();

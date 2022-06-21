@@ -100,6 +100,55 @@ build CMakeFiles/LearnOpenGL.dir/include/LearnOpenGL/camera.cpp.o: CXX_COMPILER_
   OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
   OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/include/LearnOpenGL
 
+build CMakeFiles/LearnOpenGL.dir/include/imgui/imgui.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/include/imgui/imgui.cpp || cmake_object_order_depends_target_LearnOpenGL
+  DEP_FILE = CMakeFiles/LearnOpenGL.dir/include/imgui/imgui.cpp.o.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
+  OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
+  OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/include/imgui
+
+build CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_demo.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/include/imgui/imgui_demo.cpp || cmake_object_order_depends_target_LearnOpenGL
+  DEP_FILE = CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_demo.cpp.o.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
+  OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
+  OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/include/imgui
+
+build CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_draw.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/include/imgui/imgui_draw.cpp || cmake_object_order_depends_target_LearnOpenGL
+  DEP_FILE = CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_draw.cpp.o.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
+  OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
+  OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/include/imgui
+
+build CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_impl_glfw.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/include/imgui/imgui_impl_glfw.cpp || cmake_object_order_depends_target_LearnOpenGL
+  DEP_FILE = CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_impl_glfw.cpp.o.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
+  OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
+  OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/include/imgui
+
+build CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_impl_opengl3.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/include/imgui/imgui_impl_opengl3.cpp || cmake_object_order_depends_target_LearnOpenGL
+  DEP_FILE = CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_impl_opengl3.cpp.o.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
+  OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
+  OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/include/imgui
+
+build CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_tables.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/include/imgui/imgui_tables.cpp || cmake_object_order_depends_target_LearnOpenGL
+  DEP_FILE = CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_tables.cpp.o.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
+  OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
+  OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/include/imgui
+
+build CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_widgets.cpp.o: CXX_COMPILER__LearnOpenGL_Debug /cygdrive/e/Notes/LearnOpenGL/include/imgui/imgui_widgets.cpp || cmake_object_order_depends_target_LearnOpenGL
+  DEP_FILE = CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_widgets.cpp.o.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -I/cygdrive/e/Notes/LearnOpenGL/include -I/cygdrive/e/Notes/LearnOpenGL/glm-0.9.8.5
+  OBJECT_DIR = CMakeFiles/LearnOpenGL.dir
+  OBJECT_FILE_DIR = CMakeFiles/LearnOpenGL.dir/include/imgui
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target LearnOpenGL
@@ -108,7 +157,7 @@ build CMakeFiles/LearnOpenGL.dir/include/LearnOpenGL/camera.cpp.o: CXX_COMPILER_
 #############################################
 # Link the executable LearnOpenGL.exe
 
-build LearnOpenGL.exe: CXX_EXECUTABLE_LINKER__LearnOpenGL_Debug CMakeFiles/LearnOpenGL.dir/main.cpp.o CMakeFiles/LearnOpenGL.dir/src/glad.c.o CMakeFiles/LearnOpenGL.dir/include/LearnOpenGL/Shader.cpp.o CMakeFiles/LearnOpenGL.dir/include/LearnOpenGL/camera.cpp.o | ../lib/glfw3.dll
+build LearnOpenGL.exe: CXX_EXECUTABLE_LINKER__LearnOpenGL_Debug CMakeFiles/LearnOpenGL.dir/main.cpp.o CMakeFiles/LearnOpenGL.dir/src/glad.c.o CMakeFiles/LearnOpenGL.dir/include/LearnOpenGL/Shader.cpp.o CMakeFiles/LearnOpenGL.dir/include/LearnOpenGL/camera.cpp.o CMakeFiles/LearnOpenGL.dir/include/imgui/imgui.cpp.o CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_demo.cpp.o CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_draw.cpp.o CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_impl_glfw.cpp.o CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_impl_opengl3.cpp.o CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_tables.cpp.o CMakeFiles/LearnOpenGL.dir/include/imgui/imgui_widgets.cpp.o | ../lib/glfw3.dll
   FLAGS = -g
   LINK_FLAGS = -Wl,--enable-auto-import
   LINK_LIBRARIES = -lopengl32  ../lib/glfw3.dll

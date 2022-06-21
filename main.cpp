@@ -10,6 +10,9 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 
 #include <iostream>
 
@@ -41,6 +44,12 @@ float lastFrame = 0.0f;
 
 // 光源
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightColor(1.f);
+float ambientStrength = 0.1f; // 环境光强度
+float specularStrength = 1.f; // 镜面光强度
+int Shininess = 32;
+
+bool closeDiffuse = false;
 
 int main() {
     /*
@@ -48,14 +57,14 @@ int main() {
      *
      * */
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);  // 上下文主版本号设置为 3 TODO 为什么呢？
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // 上下文次版本号设置为 3
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 使用核心模式  TODO 为什么要使用核心模式，和其他的模式有什么区别？
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__ // 用于 Mac OS X 系统
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-
+    const char* glsl_version = "#version 330";
 
     // 创建一个窗口,并设置窗口大小及标题。
     GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
@@ -70,12 +79,12 @@ int main() {
     // 告诉glfw 每当窗口调整大小的时候调用这个函数。
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     // 绑定鼠标回调函数
-    glfwSetCursorPosCallback(window, mouse_callback);
+//    glfwSetCursorPosCallback(window, mouse_callback);
 
     glfwSetScrollCallback(window, scroll_callback);
 
     // 隐藏光标，并进行捕捉。
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     /*
      *   初始化 glad
@@ -87,6 +96,22 @@ int main() {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+    // 启动imgui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // 启用键盘控制
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // 启用手柄控制
+
+    // 设置imgui风格
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+
+    // 平台/渲染器后端设置
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
 
     // 启动深度测试
     glEnable(GL_DEPTH_TEST);
@@ -172,7 +197,6 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) nullptr);
     glEnableVertexAttribArray(0);
 
-
     /*
      * 渲染循环
      *
@@ -188,17 +212,69 @@ int main() {
         // 在每一帧上面调用输入检测函数。
         processInput(window);
 
+
+
+        // 在每一帧都开启新的一帧
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // 显示窗口内的内容
+        {
+            static int counter = 6;
+
+            ImGui::Begin("Light Test"); // 创建窗口标题
+
+            // 根据滑动块设置对应的值
+            ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
+            ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+
+            // 根据按钮设置对应的值
+            if (ImGui::Button("Shininess")) counter = (counter + 1) % 8;
+            ImGui::SameLine();
+            Shininess = 1 << (counter + 1);
+            ImGui::Text("Shininess = %d", Shininess);
+
+            if (ImGui::Button("closeDiffuse")) closeDiffuse = !closeDiffuse;
+            ImGui::SameLine();
+            ImGui::Text("closeDiffuse : %s", closeDiffuse ? "True" : "False");
+
+            ImGui::ColorEdit3("Light color", (float*)&lightColor);       // Edit 3 floats representing a color
+
+            // 输出一行文字
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+
         // 渲染部分
         // ----------------------------------
+        // 渲染 imgui 窗口内容
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+
+
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // 激活着色器
         lightingShader.use();
         lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-        lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("lightColor", lightColor);
         lightingShader.setVec3("lightPos", lightPos);
         lightingShader.setVec3("viewPos", camera.Position);
+        lightingShader.setFloat("ambientStrength", ambientStrength);
+        lightingShader.setFloat("specularStrength", specularStrength);
+        lightingShader.setInt("Shininess", Shininess);
+        lightingShader.setBool("closeDiffuse", closeDiffuse);
+
+//        std::cout << "X: " << camera.Position.x << " Y: " << camera.Position.y << " Z: " << camera.Position.z << std::endl;
+
+
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f,
@@ -224,23 +300,32 @@ int main() {
         model = glm::scale(model, glm::vec3(0.2f)); // 小的正方体
         lightCubeShader.setMat4("model", model);
 
+
+        lightCubeShader.setVec3("lightColor", lightColor);
+
         glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         //------------------------------------
 
         // 检查是否有事件触发
-        glfwSwapBuffers(window);
+        glfwPollEvents();
         // 使用双缓冲来避免图像闪烁问题，前缓冲保存最终输出图像，渲染指令在后缓冲上进行绘制。
         // 该函数就是交换前后缓冲。
-        glfwPollEvents();
+        glfwSwapBuffers(window);
+
     }
 
-    // optional: de-allocate all resources once they've outlived their purpose:
+    // 释放资源
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteVertexArrays(1, &lightCubeVAO);
     glDeleteBuffers(1, &VBO);
+
+    // 释放imgui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // 释放/删除之前的分配的所有资源
     glfwTerminate();
@@ -260,14 +345,14 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+//    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+//        camera.ProcessKeyboard(FORWARD, deltaTime);
+//    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+//        camera.ProcessKeyboard(BACKWARD, deltaTime);
+//    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+//        camera.ProcessKeyboard(LEFT, deltaTime);
+//    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+//        camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
 // 当鼠标移动的时候就会调用到这个函数。
@@ -287,6 +372,8 @@ void mouse_callback(GLFWwindow *window, double xposIn, double yposIn) {
 
     lastX = xpos;
     lastY = ypos;
+
+//    std::cout << "xoffset : " << xoffset << " yoffset : " << yoffset << std::endl;
 
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
