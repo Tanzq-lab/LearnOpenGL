@@ -8,7 +8,7 @@
 
 
 
-当前项目源码地址：点我查看。
+当前项目源码地址：[点我查看](https://github.com/Vincent9966/LearnOpenGL/tree/main/assets/Tutorial/ImgUI_example)。
 
 
 
@@ -56,6 +56,8 @@ add_executable( [...] ${ImgUI})
 
 
 ## 项目示例
+
+![LightTest](Images/LightTest.gif)
 
 大概的的使用流程就是：
 
@@ -110,6 +112,8 @@ while (!glfwWindowShouldClose(window)) {
         if (ImGui::Button("closeDiffuse")) closeDiffuse = !closeDiffuse;
         ImGui::SameLine();
         ImGui::Text("closeDiffuse : %s", closeDiffuse ? "True" : "False");
+        
+        ImGui::ColorEdit3("Light color", (float*)&lightColor); 
 
         // 输出一行文字
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -133,9 +137,10 @@ while (!glfwWindowShouldClose(window)) {
 
     // 激活着色器
     lightingShader.use();
-    
-    [...]
-    
+    lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+    lightingShader.setVec3("lightColor", lightColor);
+    lightingShader.setVec3("lightPos", lightPos);
+    lightingShader.setVec3("viewPos", camera.Position);
     lightingShader.setFloat("ambientStrength", ambientStrength);
     lightingShader.setFloat("specularStrength", specularStrength);
     lightingShader.setInt("Shininess", Shininess);
@@ -144,6 +149,14 @@ while (!glfwWindowShouldClose(window)) {
 
 
     [...]
+    
+    // 画出光源
+    lightCubeShader.use();
+    
+	[...]
+    
+    lightCubeShader.setVec3("lightColor", lightColor);
+
 
     //------------------------------------
 

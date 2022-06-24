@@ -239,7 +239,7 @@ int main() {
             ImGui::SameLine();
             ImGui::Text("closeDiffuse : %s", closeDiffuse ? "True" : "False");
 
-            ImGui::ColorEdit3("Light color", (float*)&lightColor);       // Edit 3 floats representing a color
+            ImGui::ColorEdit3("Light color", (float*)&lightColor);
 
             // 输出一行文字
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
