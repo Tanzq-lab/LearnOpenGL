@@ -61,7 +61,7 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
             Pitch = -89.0f;
     }
 
-    std::cout << "Yaw : " << Yaw << " Pitch : " << Pitch << std::endl;
+//    std::cout << "Yaw : " << Yaw << " Pitch : " << Pitch << std::endl;
 
     // 使用更新的欧拉角更新 向右 向上 向前
     updateCameraVectors();

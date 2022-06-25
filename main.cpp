@@ -44,12 +44,8 @@ float lastFrame = 0.0f;
 
 // 光源
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-glm::vec3 lightColor(1.f);
-float ambientStrength = 0.1f; // 环境光强度
-float specularStrength = 1.f; // 镜面光强度
-int Shininess = 32;
-
-bool closeDiffuse = false;
+// 是否启用视角移动
+bool canMove = false;
 
 int main() {
     /*
@@ -64,7 +60,7 @@ int main() {
 #ifdef __APPLE__ // 用于 Mac OS X 系统
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-    const char* glsl_version = "#version 330";
+    const char *glsl_version = "#version 330";
 
     // 创建一个窗口,并设置窗口大小及标题。
     GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
@@ -79,12 +75,9 @@ int main() {
     // 告诉glfw 每当窗口调整大小的时候调用这个函数。
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     // 绑定鼠标回调函数
-//    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
 
     glfwSetScrollCallback(window, scroll_callback);
-
-    // 隐藏光标，并进行捕捉。
-//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     /*
      *   初始化 glad
@@ -100,8 +93,9 @@ int main() {
     // 启动imgui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // 启用键盘控制
+    ImGuiIO &io = ImGui::GetIO();
+    (void) io;
+//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // 启用键盘控制
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // 启用手柄控制
 
     // 设置imgui风格
@@ -118,55 +112,55 @@ int main() {
 
     // 创建并编译着色器
     // ------------------------------------
-    Shader lightingShader("./assets/2.lighting/2.2basic_lighting/2.2basic_lighting.vert",
-                          "./assets/2.lighting/2.2basic_lighting/2.2basic_lighting.frag");
-    Shader lightCubeShader("./assets/2.lighting/2.1colors/2.1.2light_cube.vert",
-                           "./assets/2.lighting/2.1colors/2.1.2light_cube.frag");
+    Shader lightingShader("./assets/2.lighting/3.1materials/3.1.materials.vert",
+                          "./assets/2.lighting/3.1materials/3.1.materials.frag");
+    Shader lightCubeShader("./assets/2.lighting/3.1materials/3.1.light_cube.vert",
+                           "./assets/2.lighting/3.1materials/3.1.light_cube.frag");
 
     // 设置顶点数据(和缓冲区)并配置顶点属性
     // ------------------------------------------------------------------
     float vertices[] = {
-            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-            0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-            0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-            0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
 
-            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-            0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
 
-            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+            -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
 
-            0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
 
-            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
 
-            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-            0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f
     };
 
     // 创建 普通的正方形VAO
@@ -184,7 +178,7 @@ int main() {
     glEnableVertexAttribArray(0);
 
     // 法线属性
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     // 创建光源方形VAO
@@ -208,11 +202,8 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-
         // 在每一帧上面调用输入检测函数。
         processInput(window);
-
-
 
         // 在每一帧都开启新的一帧
         ImGui_ImplOpenGL3_NewFrame();
@@ -225,24 +216,25 @@ int main() {
 
             ImGui::Begin("Light Test"); // 创建窗口标题
 
-            // 根据滑动块设置对应的值
-            ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
-            ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
-
-            // 根据按钮设置对应的值
-            if (ImGui::Button("Shininess")) counter = (counter + 1) % 8;
-            ImGui::SameLine();
-            Shininess = 1 << (counter + 1);
-            ImGui::Text("Shininess = %d", Shininess);
-
-            if (ImGui::Button("closeDiffuse")) closeDiffuse = !closeDiffuse;
-            ImGui::SameLine();
-            ImGui::Text("closeDiffuse : %s", closeDiffuse ? "True" : "False");
-
-            ImGui::ColorEdit3("Light color", (float*)&lightColor);       // Edit 3 floats representing a color
+//            // 根据滑动块设置对应的值
+//            ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
+//            ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+//
+//            // 根据按钮设置对应的值
+//            if (ImGui::Button("Shininess")) counter = (counter + 1) % 8;
+//            ImGui::SameLine();
+//            Shininess = 1 << (counter + 1);
+//            ImGui::Text("Shininess = %d", Shininess);
+//
+//            if (ImGui::Button("closeDiffuse")) closeDiffuse = !closeDiffuse;
+//            ImGui::SameLine();
+//            ImGui::Text("closeDiffuse : %s", closeDiffuse ? "True" : "False");
+//
+//            ImGui::ColorEdit3("Light color", (float *) &lightColor);
 
             // 输出一行文字
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                        ImGui::GetIO().Framerate);
             ImGui::End();
         }
 
@@ -263,20 +255,30 @@ int main() {
 
         // 激活着色器
         lightingShader.use();
-        lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-        lightingShader.setVec3("lightColor", lightColor);
-        lightingShader.setVec3("lightPos", lightPos);
+        lightingShader.setVec3("light.position", lightPos);
         lightingShader.setVec3("viewPos", camera.Position);
-        lightingShader.setFloat("ambientStrength", ambientStrength);
-        lightingShader.setFloat("specularStrength", specularStrength);
-        lightingShader.setInt("Shininess", Shininess);
-        lightingShader.setBool("closeDiffuse", closeDiffuse);
 
-//        std::cout << "X: " << camera.Position.x << " Y: " << camera.Position.y << " Z: " << camera.Position.z << std::endl;
+        // 设置光源属性
+        glm::vec3 lightColor;
+        lightColor.x = static_cast<float>(sin(glfwGetTime() * 2.0));
+        lightColor.y = static_cast<float>(sin(glfwGetTime() * 0.7));
+        lightColor.z = static_cast<float>(sin(glfwGetTime() * 1.3));
+        // 减少光源颜色的影响
+        glm::vec3 diffuseColor = lightColor   * glm::vec3(0.5f);
+        // 使用较低的环境光影响
+        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+        lightingShader.setVec3("light.ambient", ambientColor);
+        lightingShader.setVec3("light.diffuse", diffuseColor);
+        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
+        // 材质属性
+        lightingShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+        lightingShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+        // 减少影响， 因为光照并不能完全影响物体的材质
+        lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        lightingShader.setFloat("material.shininess", 32.0f);
 
-
-        // view/projection transformations
+        // 计算投影矩阵
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f,
                                                 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
@@ -300,8 +302,6 @@ int main() {
         model = glm::scale(model, glm::vec3(0.2f)); // 小的正方体
         lightCubeShader.setMat4("model", model);
 
-
-        lightCubeShader.setVec3("lightColor", lightColor);
 
         glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -345,19 +345,37 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-//    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-//        camera.ProcessKeyboard(FORWARD, deltaTime);
-//    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-//        camera.ProcessKeyboard(BACKWARD, deltaTime);
-//    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-//        camera.ProcessKeyboard(LEFT, deltaTime);
-//    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-//        camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
+        canMove = !canMove;
+        if (canMove){
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        else {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+    }
+
+
+
+    if (canMove) {
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            camera.ProcessKeyboard(FORWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            camera.ProcessKeyboard(BACKWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            camera.ProcessKeyboard(LEFT, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            camera.ProcessKeyboard(RIGHT, deltaTime);
+    }
+
+
 }
 
 // 当鼠标移动的时候就会调用到这个函数。
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow *window, double xposIn, double yposIn) {
+    if (!canMove) return;
+
     auto xpos = static_cast<float>(xposIn);
     auto ypos = static_cast<float>(yposIn);
 
@@ -372,8 +390,6 @@ void mouse_callback(GLFWwindow *window, double xposIn, double yposIn) {
 
     lastX = xpos;
     lastY = ypos;
-
-//    std::cout << "xoffset : " << xoffset << " yoffset : " << yoffset << std::endl;
 
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
